@@ -1,0 +1,52 @@
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+
+#define OLED_RESET    -1 // Reset pin (not used with I2C)
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+// LED pins
+const int ledPins[] = {D8, D7, D6, D5, D0};
+const int ledCount = sizeof(ledPins) / sizeof(ledPins[0]);
+
+void setup() {
+  // Initialize LEDs
+  for (int i = 0; i < ledCount; i++) {
+    pinMode(ledPins[i], OUTPUT);
+    digitalWrite(ledPins[i], LOW); // Turn off LEDs initially
+  }
+
+  // Initialize OLED display
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3C for 128x64
+    Serial.println("SSD1306 allocation failed");
+    while (true); // Loop forever if display initialization fails
+  }
+  display.clearDisplay();
+  display.setTextSize(3);
+  display.setTextColor(SSD1306_WHITE);
+  display.display();
+}
+
+void loop() {
+  for (int count = 0; count < 32; count++) {
+    // Convert count to binary and update LEDs
+    for (int i = 0; i < ledCount; i++) {
+      digitalWrite(ledPins[i], (count >> i) & 1);
+    }
+
+    // Display count and binary value on OLED
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.printf("%d", count);
+    display.setCursor(0, 30);
+    for (int i = 4; i >= 0; i--) {
+      display.print((count >> i) & 1);
+    }
+    display.display();
+
+    delay(3000); // Wait for 3 second
+  }
+}
